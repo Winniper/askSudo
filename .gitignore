@@ -42,3 +42,10 @@ next-env.d.ts
 
 #MacOs metadata files
 ._*
+
+# clerk configuration (can include secrets)
+/.clerk/
+
+/lib/generated/prisma
+
+/generated/prisma
