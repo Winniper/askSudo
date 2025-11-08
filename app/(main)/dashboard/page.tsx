@@ -9,7 +9,7 @@ const Dashboard = async () => {
     const session = await auth.api.getSession({headers: await headers()})
 
     if (!session){
-        redirect("/login")
+        redirect("/")
     }
   return (
     <div>
