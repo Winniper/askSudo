@@ -13,30 +13,30 @@ import {
 
 type ToolUIPartApproval =
   | {
-      id: string;
-      approved?: never;
-      reason?: never;
-    }
+    id: string;
+    approved?: never;
+    reason?: never;
+  }
   | {
-      id: string;
-      approved: boolean;
-      reason?: string;
-    }
+    id: string;
+    approved: boolean;
+    reason?: string;
+  }
   | {
-      id: string;
-      approved: true;
-      reason?: string;
-    }
+    id: string;
+    approved: true;
+    reason?: string;
+  }
   | {
-      id: string;
-      approved: true;
-      reason?: string;
-    }
+    id: string;
+    approved: true;
+    reason?: string;
+  }
   | {
-      id: string;
-      approved: false;
-      reason?: string;
-    }
+    id: string;
+    approved: false;
+    reason?: string;
+  }
   | undefined;
 
 type ConfirmationContextValue = {
@@ -97,7 +97,7 @@ export const ConfirmationRequest = ({ children }: ConfirmationRequestProps) => {
   const { state } = useConfirmation();
 
   // Only show when approval is requested
-  if (state !== "approval-requested") {
+  if ((state as string) !== "approval-requested") {
     return null;
   }
 
@@ -116,8 +116,8 @@ export const ConfirmationAccepted = ({
   // Only show when approved and in response states
   if (
     !approval?.approved ||
-    (state !== "approval-responded" &&
-      state !== "output-denied" &&
+    ((state as string) !== "approval-responded" &&
+      (state as string) !== "output-denied" &&
       state !== "output-available")
   ) {
     return null;
@@ -138,8 +138,8 @@ export const ConfirmationRejected = ({
   // Only show when rejected and in response states
   if (
     approval?.approved !== false ||
-    (state !== "approval-responded" &&
-      state !== "output-denied" &&
+    ((state as string) !== "approval-responded" &&
+      (state as string) !== "output-denied" &&
       state !== "output-available")
   ) {
     return null;
@@ -157,7 +157,7 @@ export const ConfirmationActions = ({
   const { state } = useConfirmation();
 
   // Only show when approval is requested
-  if (state !== "approval-requested") {
+  if ((state as string) !== "approval-requested") {
     return null;
   }
 

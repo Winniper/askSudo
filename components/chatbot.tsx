@@ -31,6 +31,7 @@ import {
     ConversationScrollButton,
 } from '@/components/ai-elements/conversation'
 import { Message, MessageContent, MessageResponse } from '@/components/ai-elements/message'
+import Temp from "./temp"
 
 const ChatBot = () => {
     const [input, setInput] = useState<string>('')
@@ -105,6 +106,7 @@ const ChatBot = () => {
                     </PromptInputFooter>
                 </PromptInput>
             </div>
+            <Temp />
         </div>
     )
 }
