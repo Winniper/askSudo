@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import { signOut } from "@/lib/auth-client";
 
-const Temp = () => {
+const LogOut = () => {
     const router = useRouter();
 
     const handleOnclick = () => {
@@ -16,4 +16,4 @@ const Temp = () => {
   )
 }
 
-export default Temp
+export default LogOut

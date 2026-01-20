@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Button } from './ui/button'
 import { PanelRight, MessageCircle } from 'lucide-react';
-import Temp from './temp';
+import Temp from './logout';
 
 const Sidebar = () => {
   return (

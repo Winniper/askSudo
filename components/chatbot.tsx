@@ -31,7 +31,9 @@ import {
     ConversationScrollButton,
 } from '@/components/ai-elements/conversation'
 import { Message, MessageContent, MessageResponse } from '@/components/ai-elements/message'
-import Temp from "./temp"
+
+import { useUploadThing } from "@/lib/uploadthing"
+
 
 const ChatBot = () => {
     const [input, setInput] = useState<string>('')
@@ -39,7 +41,9 @@ const ChatBot = () => {
 
     const { messages, status, sendMessage } = useChat()
 
-    const handleSubmit = (message: PromptInputMessage) => {
+    const { startUpload, isUploading } = useUploadThing("pdfUpload")
+
+    const handleSubmit = async (message: PromptInputMessage) => {
         const hasText = Boolean(message.text)
         const hasAttachment = Boolean(message.files?.length)
 
@@ -47,15 +51,45 @@ const ChatBot = () => {
             return;
         }
 
+        const pdfParts = message.files?.filter(f => f.mediaType === "application/pdf") || []
+
+        let documentIds: string[] = []
+
+        if (pdfParts.length > 0) {
+            try {
+                const pdfFiles = await Promise.all(
+                    pdfParts.map(async (part) => {
+                        const response = await fetch(part.url)
+                        const blob = await response.blob()
+                        return new File([blob], part.filename || "document.pdf", {
+                            type: part.mediaType
+                        })
+                    })
+                )
+
+                const results = await startUpload(pdfFiles)
+
+                if (results) {
+                    documentIds = results.map(r => r.serverData.documentId)
+                    console.log("Uploaded documents:", documentIds)
+                }
+            } catch (error) {
+                console.error("Upload failed:", error)
+            }
+        }
+
+        const docContext = documentIds.length > 0
+            ? ` [Documents uploaded: ${documentIds.join(", ")}]`
+            : ""
+
         sendMessage({
-            text: message.text || "Sent an attachment",
+            text: (message.text || "Sent an attachment") + docContext,
             files: message.files
-        },
-        )
+        })
         setInput('')
     }
     return (
-        <div className="max-w-4xl mx-auto p-6 relative size-full rounded-lg border h-full">
+        <div className="max-w-4xl mx-auto p-6 relative size-full h-full">
             <div className="flex flex-col h-full">
                 <Conversation>
                     <ConversationContent>
@@ -106,7 +140,6 @@ const ChatBot = () => {
                     </PromptInputFooter>
                 </PromptInput>
             </div>
-            <Temp />
         </div>
     )
 }

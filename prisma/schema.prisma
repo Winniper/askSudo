@@ -15,15 +15,17 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String         @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean        @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now()) @updatedAt
   sessions      Session[]
   accounts      Account[]
+  document      Document[]
+  conversations Conversation[]
 
   @@unique([email])
   @@map("user")
@@ -72,4 +74,46 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  userId    String
+  fileName  String
+  fileUrl   String
+  fileKey   String   @unique // UploadThing's unique key
+  fileSize  Int
+  mimeType  String
+  status    String   @default("pending") // pending | processing | ready | failed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("document")
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@map("conversation")
+}
+
+model ChatMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String // "user" | "assistant"
+  content        String   @db.Text
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("chat_message")
 }
