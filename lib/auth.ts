@@ -9,4 +9,10 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  trustedOrigins: [
+    process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+    // Add your Vercel production URL
+    'https://ask-sudo.vercel.app',
+    // Add any other domains you use
+  ],
 })
