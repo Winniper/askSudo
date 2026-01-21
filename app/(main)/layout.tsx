@@ -15,7 +15,7 @@ export default function MainLayout({
             <SidebarTrigger className="-ml-1 text-white/70 hover:text-white hover:bg-white/10" />
           </div>
         </header>
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-hidden">
           {children}
         </main>
       </SidebarInset>

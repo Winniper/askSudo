@@ -110,9 +110,9 @@ export default function NewChatClient() {
                         <div className="space-y-6">
                             <div className="flex justify-center">
                                 <div className="flex items-center gap-2">
-                                    <span className="w-3 h-3 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                                    <span className="w-3 h-3 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                                    <span className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" />
+                                    <span className="w-3 h-3 bg-white/50 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                                    <span className="w-3 h-3 bg-white/50 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                                    <span className="w-3 h-3 bg-white/50 rounded-full animate-bounce" />
                                 </div>
                             </div>
                             <p className="text-white/60 text-lg">Starting conversation...</p>

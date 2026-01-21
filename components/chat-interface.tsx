@@ -41,7 +41,6 @@ interface ChatInterfaceProps {
 
 export default function ChatInterface({ conversationId, initialMessages, pendingMessage }: ChatInterfaceProps) {
     const [input, setInput] = useState<string>('')
-    const [hasSentPending, setHasSentPending] = useState(false)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
     const { messages, status, sendMessage, setMessages } = useChat({
@@ -77,9 +76,10 @@ export default function ChatInterface({ conversationId, initialMessages, pending
     }, [initialMessages, messages.length, setMessages])
 
     // Send pending message on mount (for new conversations)
+    const hasSentPendingRef = useRef(false)
     useEffect(() => {
-        if (pendingMessage && !hasSentPending && status === 'ready') {
-            setHasSentPending(true)
+        if (pendingMessage && !hasSentPendingRef.current && status === 'ready') {
+            hasSentPendingRef.current = true
             // Save user message to DB and send to LLM
             fetch(`/api/conversations/${conversationId}/messages`, {
                 method: 'POST',
@@ -89,7 +89,7 @@ export default function ChatInterface({ conversationId, initialMessages, pending
                 sendMessage({ text: pendingMessage })
             })
         }
-    }, [pendingMessage, hasSentPending, status, conversationId, sendMessage])
+    }, [pendingMessage, status, conversationId, sendMessage])
 
     const handleSubmit = async (message: PromptInputMessage) => {
         const hasText = Boolean(message.text)
@@ -146,54 +146,87 @@ export default function ChatInterface({ conversationId, initialMessages, pending
     }
 
     return (
-        <div className="flex flex-col h-full bg-black">
-            {/* Messages area */}
-            <div className="flex-1 overflow-hidden">
+        <div className="flex flex-col h-[calc(100vh-3.5rem)] bg-black">
+            {/* Messages area - scrollable */}
+            <div className="flex-1 min-h-0 overflow-hidden">
                 <Conversation className="h-full">
-                    <ConversationContent className="px-4 py-6">
-                        {messages.map((message) => (
+                    <ConversationContent className="px-4 md:px-8 py-6 max-w-4xl mx-auto">
+                        {messages.map((message, index) => (
                             <Message
                                 from={message.role}
                                 key={message.id}
                                 className={message.role === 'user'
-                                    ? 'ml-auto max-w-[80%]'
-                                    : 'mr-auto max-w-[80%]'
+                                    ? 'ml-auto max-w-[85%] md:max-w-[70%]'
+                                    : 'mr-auto max-w-[95%] md:max-w-[85%]'
                                 }
                             >
-                                <MessageContent
-                                    className={message.role === 'user'
-                                        ? 'bg-white/10 border border-white/20 rounded-2xl px-4 py-3'
-                                        : 'bg-transparent'
-                                    }
-                                >
-                                    {message.parts.map((part, i) => {
-                                        switch (part.type) {
-                                            case 'text':
-                                                return (
-                                                    <MessageResponse key={`${message.id}-${i}`}>
-                                                        {part.text}
-                                                    </MessageResponse>
-                                                )
-                                            default:
-                                                return null
-                                        }
-                                    })}
-                                </MessageContent>
+                                {message.role === 'assistant' && (
+                                    <div className="flex items-start gap-3">
+                                        {/* Assistant avatar */}
+                                        <div className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 border border-white/10 flex items-center justify-center">
+                                            <svg className="w-4 h-4 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
+                                                <path d="M5 19l1 3 1-3M18 19l1 3 1-3" strokeLinecap="round" />
+                                            </svg>
+                                        </div>
+                                        <MessageContent className="flex-1 bg-zinc-900/50 border border-white/5 rounded-2xl rounded-tl-sm px-4 py-3">
+                                            {message.parts.map((part, i) => {
+                                                switch (part.type) {
+                                                    case 'text':
+                                                        return (
+                                                            <MessageResponse key={`${message.id}-${i}`} className="text-white/90 leading-relaxed">
+                                                                {part.text}
+                                                            </MessageResponse>
+                                                        )
+                                                    default:
+                                                        return null
+                                                }
+                                            })}
+                                        </MessageContent>
+                                    </div>
+                                )}
+                                {message.role === 'user' && (
+                                    <MessageContent className="bg-gradient-to-br from-zinc-700 to-zinc-800 border border-white/10 rounded-2xl rounded-tr-sm px-4 py-3">
+                                        {message.parts.map((part, i) => {
+                                            switch (part.type) {
+                                                case 'text':
+                                                    return (
+                                                        <MessageResponse key={`${message.id}-${i}`} className="text-white leading-relaxed">
+                                                            {part.text}
+                                                        </MessageResponse>
+                                                    )
+                                                default:
+                                                    return null
+                                            }
+                                        })}
+                                    </MessageContent>
+                                )}
                             </Message>
                         ))}
 
                         {/* Loading indicator */}
                         {(status === 'submitted' || status === 'streaming') && (
-                            <div className="mr-auto max-w-[80%]">
-                                <div className="flex items-center gap-3 py-4">
-                                    <div className="flex items-center gap-1">
-                                        <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                                        <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                                        <span className="w-2 h-2 bg-white/60 rounded-full animate-bounce" />
+                            <div className="mr-auto max-w-[85%] md:max-w-[70%]">
+                                <div className="flex items-start gap-3">
+                                    {/* Animated avatar */}
+                                    <div className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 border border-white/10 flex items-center justify-center animate-pulse">
+                                        <svg className="w-4 h-4 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
+                                            <path d="M5 19l1 3 1-3M18 19l1 3 1-3" strokeLinecap="round" />
+                                        </svg>
                                     </div>
-                                    <span className="text-white/40 text-sm">
-                                        {status === 'submitted' ? 'Thinking...' : 'Generating...'}
-                                    </span>
+                                    <div className="flex-1 bg-zinc-900/50 border border-white/5 rounded-2xl rounded-tl-sm px-4 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="w-2 h-2 bg-white/50 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                                                <span className="w-2 h-2 bg-white/50 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                                                <span className="w-2 h-2 bg-white/50 rounded-full animate-bounce" />
+                                            </div>
+                                            <span className="text-white/50 text-sm font-medium">
+                                                {status === 'submitted' ? 'Thinking...' : 'Generating response...'}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -202,8 +235,8 @@ export default function ChatInterface({ conversationId, initialMessages, pending
                 </Conversation>
             </div>
 
-            {/* Prompt input */}
-            <div className="p-4 pb-6 border-t border-white/10">
+            {/* Prompt input - fixed at bottom */}
+            <div className="shrink-0 p-4 pb-6 border-t border-white/10 bg-black">
                 <div className="max-w-3xl mx-auto">
                     <PromptInput
                         onSubmit={handleSubmit}
